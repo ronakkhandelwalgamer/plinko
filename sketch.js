@@ -1,77 +1,125 @@
-const Engine = Matter.Engine;
-const World = Matter.World;
-const Bodies = Matter.Bodies;
-var thunder, thunder1,thunder2,thunder3,thunder4;
+var Engine = Matter.Engine,
+    World = Matter.World,
+    Events = Matter.Events,
+    Bodies = Matter.Bodies; 
+var particles = [];
+var plinkos = [];
+var divisions =[];
+var particle;
 
-var engine, world;
-var drops = [];
-var rand;
+var divisionHeight=300;
+var score =0;
+var count = 0;
+var gameState ="start";
 
-var maxDrops=100;
+function setup() {
+  createCanvas(800, 800);
+  engine = Engine.create();
+  world = engine.world;
+  ground = new Ground(width/2,height,width,20);
 
-var thunderCreatedFrame=0;
+   for (var k = 0; k <=width; k = k + 80) {
+     divisions.push(new Divisions(k, height-divisionHeight/2, 10, divisionHeight));
+   }
+    for (var j = 75; j <=width; j=j+50) {
+       plinkos.push(new Plinko(j,75));
+    }
 
-function preload(){
-    thunder1 = loadImage("thunderbolt/1.png");
-    thunder2 = loadImage("thunderbolt/2.png");
-    thunder3 = loadImage("thunderbolt/3.png");
-    thunder4 = loadImage("thunderbolt/4.png");
-}
+    for (var j = 50; j <=width-10; j=j+50) {
+        plinkos.push(new Plinko(j,175));
+    }
 
-function setup(){
-    engine = Engine.create();
-    world = engine.world;
+    for (var j = 75; j <=width; j=j+50) {
+        plinkos.push(new Plinko(j,275));
+    }
 
-    createCanvas(400,700);
-    umbrella = new Umbrella(200,500);
-
-    //creating drops
-    if(frameCount % 150 === 0){
-
-        for(var i=0; i<maxDrops; i++){
-            drops.push(new createDrop(random(0,400), random(0,400)));
-        }
-
+    for (var j = 50; j <=width-10; j=j+50) {
+        plinkos.push(new Plinko(j,375));
     }
     
 }
+ 
+function draw() {
+  background("black");
+  textSize(35)
+  text("Score : "+score,20,40);
+  fill("white");
+  //text(mouseX + "," + mouseY, 20, 50);
+  textSize(35)
+  text(" 500 ", 5, 550);
+  text(" 500 ", 80, 550);
+  text(" 500 ", 160, 550);
+  text(" 500 ", 240, 550);
+  text(" 100 ", 320, 550);
+  text(" 100 ", 400, 550);
+  text(" 100 ", 480, 550);
+  text(" 200 ", 560, 550);
+  text(" 200 ", 640, 550);
+  text(" 200 ", 720, 550);
+  Engine.update(engine);
+  ground.display();
+  
+  if ( gameState =="end") {
+    
+    textSize(100);
+    text("GameOver", 150, 250);
+    //return
+  }
 
-function draw(){
-    Engine.update(engine);
-    background(0); 
+  
 
-    //creating thunder
-    rand = Math.round(random(1,4));
-    if(frameCount%80===0){
-        thunderCreatedFrame=frameCount;
-        thunder = createSprite(random(10,370), random(10,30), 10, 10);
-        switch(rand){
-            case 1: thunder.addImage(thunder1);
-            break;
-            case 2: thunder.addImage(thunder2);
-            break; 
-            case 3: thunder.addImage(thunder3);
-            break;
-            case 4: thunder.addImage(thunder4);
-            break;
-            default: break;
-        }
-        thunder.scale = random(0.3,0.6)
-    }
+  
 
-    if(thunderCreatedFrame + 10 ===frameCount && thunder){
-        thunder.destroy();
-    }
-
-    umbrella.display();
-
-    //displaying rain drops
-    for(var i = 0; i<maxDrops; i++){
-        drops[i].showDrop();
-        drops[i].updateY()
+  for (var i = 0; i < plinkos.length; i++) {
+     plinkos[i].display();  
+  }
+ 
+    if(particle!=null)
+    {
+       particle.display();
         
-    }
+        if (particle.body.position.y>760)
+        {
+              if (particle.body.position.x < 300) 
+              {
+                  score=score+500;      
+                  particle=null;
+                  if ( count>= 5) gameState ="end";                          
+              }
 
-    drawSprites();
-}   
 
+              else if (particle.body.position.x < 600 && particle.body.position.x > 301 ) 
+              {
+                    score = score + 100;
+                    particle=null;
+                    if ( count>= 5) gameState ="end";
+
+              }
+              else if (particle.body.position.x < 900 && particle.body.position.x > 601 )
+              {
+                    score = score + 200;
+                    particle=null;
+                    if ( count>= 5)  gameState ="end";
+
+              }      
+              
+        }
+  
+      }
+
+   for (var k = 0; k < divisions.length; k++) 
+   {
+     divisions[k].display();
+   }
+ 
+}
+
+
+function mousePressed()
+{
+  if(gameState!=="end")
+  {
+      count++;
+     particle=new Particle(mouseX, 10, 10, 10); 
+  }   
+}
